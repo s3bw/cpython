@@ -74,7 +74,7 @@ class _EnumDict(dict):
         if _is_sunder(key):
             if key not in (
                     '_order_', '_create_pseudo_member_', '_deprecate_',
-                    '_generate_next_value_', '_missing_', '_ignore_', '_deprecate_warning_'
+                    '_generate_next_value_', '_missing_', '_ignore_', '_deprecation_warning_'
                     ):
                 raise ValueError('_names_ are reserved for future Enum use')
             if key == '_generate_next_value_':
@@ -349,7 +349,7 @@ class EnumMeta(type):
     def __getitem__(cls, name):
         enum_member = cls._member_map_[name]
         if enum_member._deprecate_:
-            cls._deprecate_warning_(name, 3)
+            cls._deprecation_warning_(name, 3)
         return enum_member
 
     def __iter__(cls):
@@ -569,7 +569,7 @@ class Enum(metaclass=EnumMeta):
         try:
             member = cls._value2member_map_[value]
             if member._deprecate_:
-                cls._deprecate_warning_(member._name_, 4)
+                cls._deprecation_warning_(member._name_, 4)
             return member
         except KeyError:
             # Not found, no need to do long O(n) search
@@ -614,7 +614,7 @@ class Enum(metaclass=EnumMeta):
         raise ValueError("%r is not a valid %s" % (value, cls.__qualname__))
 
     @classmethod
-    def _deprecate_warning_(cls, value, stacklevel):
+    def _deprecation_warning_(cls, value, stacklevel):
         warnings.warn("%r is a deprecated %s." % (value, cls.__qualname__),
                         DeprecationWarning, stacklevel=stacklevel)
 
