@@ -73,7 +73,7 @@ class _EnumDict(dict):
         """
         if _is_sunder(key):
             if key not in (
-                    '_order_', '_create_pseudo_member_', '_deprecate_',
+                    '_order_', '_create_pseudo_member_', '_deprecated_',
                     '_generate_next_value_', '_missing_', '_ignore_', '_deprecation_warning_'
                     ):
                 raise ValueError('_names_ are reserved for future Enum use')
@@ -148,9 +148,9 @@ class EnumMeta(type):
         for name in classdict._member_names:
             del classdict[name]
 
-        # keys listed in _deprecate_ will raise a DeprecationWarning
-        classdict.setdefault('_deprecate_', [])
-        deprecate = classdict['_deprecate_']
+        # keys listed in _deprecated_ will raise a DeprecationWarning
+        classdict.setdefault('_deprecated_', [])
+        deprecate = classdict['_deprecated_']
 
         # adjust the sunders
         _order_ = classdict.pop('_order_', None)
@@ -224,7 +224,7 @@ class EnumMeta(type):
             enum_member._name_ = member_name
             enum_member.__objclass__ = enum_class
             enum_member.__init__(*args)
-            enum_member._deprecate_ =  member_name in deprecate
+            enum_member._deprecated_ =  member_name in deprecate
             # If another member with the same value was already defined, the
             # new member becomes an alias to the existing one.
             for name, canonical_member in enum_class._member_map_.items():
@@ -348,8 +348,8 @@ class EnumMeta(type):
 
     def __getitem__(cls, name):
         enum_member = cls._member_map_[name]
-        if enum_member._deprecate_:
-            cls._deprecation_warning_(name, 3)
+        if enum_member._deprecated_:
+            cls._deprecation_warning_(name, stacklevel=3)
         return enum_member
 
     def __iter__(cls):
@@ -568,8 +568,8 @@ class Enum(metaclass=EnumMeta):
         # see if it's in the reverse mapping (for hashable values)
         try:
             member = cls._value2member_map_[value]
-            if member._deprecate_:
-                cls._deprecation_warning_(member._name_, 4)
+            if member._deprecated_:
+                cls._deprecation_warning_(member._name_, stacklevel=4)
             return member
         except KeyError:
             # Not found, no need to do long O(n) search
@@ -578,6 +578,8 @@ class Enum(metaclass=EnumMeta):
             # not there, now do long search -- O(n) behavior
             for member in cls._member_map_.values():
                 if member._value_ == value:
+                    if member._deprecated_:
+                        cls._deprecation_warning_(member._name_, stacklevel=4)
                     return member
         # still not found -- try _missing_ hook
         try:
