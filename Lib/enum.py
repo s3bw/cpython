@@ -346,6 +346,12 @@ class EnumMeta(type):
         except KeyError:
             raise AttributeError(name) from None
 
+    def __getattribute__(self, name):
+        attr = super().__getattribute__(name)
+        if hasattr(attr, '_deprecated_'), and attr._deprecated_:
+            attr._deprecation_warning_(attr._name_, stacklevel=3)
+        return attr
+
     def __getitem__(cls, name):
         enum_member = cls._member_map_[name]
         if enum_member._deprecated_:
