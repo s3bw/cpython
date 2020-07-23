@@ -348,7 +348,7 @@ class EnumMeta(type):
 
     def __getattribute__(self, name):
         attr = super().__getattribute__(name)
-        if hasattr(attr, '_deprecated_'), and attr._deprecated_:
+        if hasattr(attr, '_deprecated_') and attr._deprecated_:
             attr._deprecation_warning_(attr._name_, stacklevel=3)
         return attr
 
